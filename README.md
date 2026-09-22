@@ -12,12 +12,17 @@ CLI:
     python3 er_save_editor.py show 0
     python3 er_save_editor.py items 0 [--search kukri]
     python3 er_save_editor.py setqty 0 53 50        # held goods qty, 1..999
+    python3 er_save_editor.py additem 0 kukri 99     # add goods (merge or append)
+    python3 er_save_editor.py additem 0 400006c2 99  # same by hex id
     python3 er_save_editor.py set 0 vigor=50 runes=100000
     python3 er_save_editor.py updatedb               # refresh items_db/
 
 The save is auto-detected under Wine/Steam (`--save PATH` overrides).
-Edits are in-place fixed-size only (no item adds/removes), MD5 checksums
-are recalculated, and every write keeps a timestamped backup.
+Edits are in-place fixed-size only: stats, quantities, and appended goods
+rows (empty held slots + count bump). MD5 checksums are recalculated and
+every write keeps a timestamped backup. Weapons/armor add/remove and the
+storage box are out of scope — variable-length GaItem surgery is what
+corrupts saves, and the chest is empty in every save on hand.
 
 ## Layout
 

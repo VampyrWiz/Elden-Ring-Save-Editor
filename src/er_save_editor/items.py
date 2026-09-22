@@ -104,3 +104,26 @@ def pack_qty(data, dat, base, row, qty):
         raise ValueError(f"row {row} is not a stackable goods item (qty edit refused)")
     struct.pack_into("<I", data, dat + base + 4 + row * 12 + 4, qty)
     return h, old
+
+
+def goods_handle(iid):
+    """Inventory handle for a goods item id (0xB0 + low bits; measured on
+    real rows). Raises unless iid is a goods id."""
+    if ((iid >> 28) & 0xF) != 0x4:
+        raise ValueError(f"0x{iid:08X} is not a goods item (only goods can be added)")
+    return 0xB0000000 | (iid & 0xFFFFFF)
+
+
+def pack_add(data, dat, base, handle, qty, index):
+    """Append one row into the first empty slot; bumps count. Fixed-size."""
+    if not 1 <= qty <= 999:
+        raise ValueError("qty must be 1..999")
+    cnt = struct.unpack_from("<I", data, dat + base)[0]
+    if cnt >= HELD_CAP:
+        raise ValueError("held inventory is full")
+    off = dat + base + 4 + cnt * 12
+    if struct.unpack_from("<III", data, off) != (0, 0, 0):
+        raise ValueError("held inventory is not packed (refusing to add)")
+    struct.pack_into("<III", data, off, handle, qty, index)
+    struct.pack_into("<I", data, dat + base, cnt + 1)
+    return cnt  # new row number

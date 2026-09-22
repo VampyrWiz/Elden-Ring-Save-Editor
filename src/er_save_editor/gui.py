@@ -1,7 +1,7 @@
 """Tk GUI: file Open/Save plus Character / Statistics / Items tabs."""
 import os
 
-from .itemdb import load_db, resolve_item, update_db
+from .itemdb import find_goods, load_db, resolve_item, update_db
 from .save import SLOT_N, STAT_OFFS, Save, game_running
 
 
@@ -198,6 +198,17 @@ def run_gui(path):
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
+    def do_additem():
+        n = cur()
+        try:
+            iid = find_goods(qsearch.get(), db)
+            action, row, qty = sv.add_item(n, iid, int(qqty.get() or 1))
+            bak = sv.write()
+            status.set(f"{action} row {row} x{qty}. backup: {bak}")
+            refresh_items(n)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
     def do_updatedb():
         try:
             done = update_db()
@@ -214,7 +225,8 @@ def run_gui(path):
     ttk.Button(frow, text="Save (backup + MD5)", command=do_save).grid(row=1, column=2, padx=4)
     ttk.Button(tab_char, text="Reload", command=load).grid(row=len(fields) + 2, column=0, sticky="w", pady=4)
     ttk.Button(tab_items, text="Set qty", command=do_setqty).grid(row=2, column=2, padx=4)
-    ttk.Button(tab_items, text="Update item DB", command=do_updatedb).grid(row=3, column=0, columnspan=3, sticky="w", pady=4)
+    ttk.Button(tab_items, text="Add item", command=do_additem).grid(row=3, column=2, padx=4)
+    ttk.Button(tab_items, text="Update item DB", command=do_updatedb).grid(row=4, column=0, columnspan=3, sticky="w", pady=4)
     slot_names()
     slotbox.current(0)
     load()

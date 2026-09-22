@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from .itemdb import DB_DIR, load_db, resolve_item, update_db
+from .itemdb import DB_DIR, find_goods, load_db, resolve_item, update_db
 from .save import SLOT_N, STAT_OFFS, Save, find_save, game_running
 
 
@@ -82,6 +82,10 @@ def main(argv=None):
     p.add_argument("slot", type=int)
     p.add_argument("row", type=int)
     p.add_argument("qty", type=int)
+    p = sub.add_parser("additem", help="add goods (merge or append; weapons/armor refused)")
+    p.add_argument("slot", type=int)
+    p.add_argument("query", help="hex id (e.g. 400006c2) or unique name part")
+    p.add_argument("qty", type=int)
     p = sub.add_parser("updatedb", help="refresh items_db/ from GitHub or DIR")
     p.add_argument("dir", nargs="?", default=None)
     a = ap.parse_args(argv)
@@ -123,6 +127,18 @@ def main(argv=None):
             return 1
         bak = sv.write()
         print(f"wrote {path} (backup {bak})")
+    elif a.cmd == "additem":
+        if game_running():
+            print("warning: Elden Ring appears to be running — close it first to avoid corruption",
+                  file=sys.stderr)
+        try:
+            iid = find_goods(a.query, load_db())
+            action, row, qty = sv.add_item(a.slot, iid, a.qty)
+        except Exception as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        bak = sv.write()
+        print(f"{action} row {row} x{qty} (backup {bak})")
     elif a.cmd == "set":
         if game_running():
             print("warning: Elden Ring appears to be running — close it first to avoid corruption",

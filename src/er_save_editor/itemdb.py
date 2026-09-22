@@ -44,6 +44,30 @@ def resolve_item(iid, db):
     return None, cat
 
 
+def find_goods(query, db):
+    """Resolve a hex id or unique name substring to a goods item id."""
+    table = db.get("goods", {})
+    q = query.strip()
+    try:
+        iid = int(q, 16)
+        if iid in table:
+            return iid
+        if ((iid >> 28) & 0xF) != 0x4:
+            raise ValueError(f"0x{iid:08X} is not a goods item (only goods can be added)")
+        raise ValueError(f"0x{iid:08X} is not a known goods item")
+    except ValueError as e:
+        if "goods item" in str(e):
+            raise
+    hits = [(i, n) for i, n in table.items() if q.lower() in n.lower()]
+    if len(hits) == 1:
+        return hits[0][0]
+    if not hits:
+        raise ValueError(f"no goods item matches {query!r}")
+    sample = ", ".join(n for _, n in hits[:10])
+    raise ValueError(f"{len(hits)} goods items match {query!r}: {sample}"
+                     + (" ..." if len(hits) > 10 else ""))
+
+
 def update_db(dest=DB_DIR, src=None):
     """Refresh items_db/ from a local sl2-analyzer checkout (src dir holding
     *.json) or from GitHub raw. Returns list of files written."""

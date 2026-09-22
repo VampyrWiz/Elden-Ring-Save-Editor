@@ -7,10 +7,12 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
 from er_save_editor.cli import parse_set_args
-from er_save_editor.itemdb import resolve_item
+from er_save_editor.itemdb import find_goods, resolve_item
 from er_save_editor.items import (
     find_held_base,
+    goods_handle,
     handle_item_id,
+    pack_add,
     pack_qty,
     read_items,
     walk_gaitems,
@@ -73,6 +75,27 @@ class TestItems(unittest.TestCase):
             pack_qty(data, dat, base, 1, 5)
         with self.assertRaises(ValueError):  # out of range
             pack_qty(data, dat, base, 0, 1000)
+
+    def test_pack_add(self):
+        slot, m, base = make_slot()
+        data = bytearray(0x20000)
+        dat = 0x310
+        data[dat:dat + len(slot)] = slot
+        row = pack_add(data, dat, base, 0xB0000009, 3, 500)
+        self.assertEqual(row, 3)
+        self.assertEqual(struct.unpack_from("<I", data, dat + base)[0], 4)
+        self.assertEqual(struct.unpack_from("<III", data, dat + base + 4 + 3 * 12),
+                         (0xB0000009, 3, 500))
+        self.assertEqual(goods_handle(0x40000009), 0xB0000009)
+        with self.assertRaises(ValueError):  # weapon id refused
+            goods_handle(0x00000100)
+
+    def test_find_goods(self):
+        db = {"goods": {0x40000064: "Finger", 0x400006C2: "Kukri"}}
+        self.assertEqual(find_goods("400006c2", db), 0x400006C2)
+        self.assertEqual(find_goods("kuk", db), 0x400006C2)
+        with self.assertRaises(ValueError):
+            find_goods("zzz", db)
 
 
 class TestResolve(unittest.TestCase):

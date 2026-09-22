@@ -221,6 +221,29 @@ class Save:
         chk, d = slot_offsets(n)
         self.data[chk:chk + 16] = md5(self.data[d:d + SLOT_DATA])
 
+    def add_item(self, n, iid, qty):
+        """Add goods to held inventory (merge if held, else append into an
+        empty slot). Returns (action, row, qty). Weapons/armor/AoW refused:
+        they need variable-length GaItem rows (unsafe without a rebuild)."""
+        from .items import goods_handle, pack_add, pack_qty, read_items
+        _, dat = slot_offsets(n)
+        slot = self.slot_data(n)
+        base = self.held_base(n)
+        handle = goods_handle(iid)
+        rows = read_items(slot, base, self.gaitems(n))
+        for row, h, _i, q, _ix in rows:
+            if h == handle:
+                newq = min(999, q + qty)
+                pack_qty(self.data, dat, base, row, newq)
+                chk, d = slot_offsets(n)
+                self.data[chk:chk + 16] = md5(self.data[d:d + SLOT_DATA])
+                return "merged", row, newq
+        index = max((_ix for _, _, _, _, _ix in rows), default=432) + 1
+        row = pack_add(self.data, dat, base, handle, qty, index)
+        chk, d = slot_offsets(n)
+        self.data[chk:chk + 16] = md5(self.data[d:d + SLOT_DATA])
+        return "added", row, qty
+
     def write(self):
         ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         bak = self.path + f".bak-{ts}"
