@@ -1,9 +1,15 @@
-"""Command line: list / show / set / items / setqty / updatedb / --gui."""
+"""Command line: list / show / set / items / setqty / additem / updatedb / --gui."""
 import argparse
+import os
 import sys
 
-from .itemdb import DB_DIR, find_goods, load_db, resolve_item, update_db
-from .save import SLOT_N, STAT_OFFS, Save, find_save, game_running
+try:
+    from .itemdb import DB_DIR, find_goods, load_db, resolve_item, update_db
+    from .save import SLOT_N, STAT_OFFS, Save, find_save, game_running
+except ImportError:  # direct run: python3 src/er_save_editor/cli.py ...
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from er_save_editor.itemdb import DB_DIR, find_goods, load_db, resolve_item, update_db
+    from er_save_editor.save import SLOT_N, STAT_OFFS, Save, find_save, game_running
 
 
 def cmd_list(sv):
@@ -153,3 +159,7 @@ def main(argv=None):
         print(f"wrote {path} (backup {bak})")
         cmd_show(Save(path), a.slot)
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

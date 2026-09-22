@@ -1,8 +1,14 @@
 """Tk GUI: file Open/Save plus Character / Statistics / Items tabs."""
 import os
+import sys
 
-from .itemdb import find_goods, load_db, resolve_item, update_db
-from .save import SLOT_N, STAT_OFFS, Save, game_running
+try:
+    from .itemdb import find_goods, load_db, resolve_item, update_db
+    from .save import SLOT_N, STAT_OFFS, Save, find_save, game_running
+except ImportError:  # direct run: python3 src/er_save_editor/gui.py [SAVE]
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from er_save_editor.itemdb import find_goods, load_db, resolve_item, update_db
+    from er_save_editor.save import SLOT_N, STAT_OFFS, Save, find_save, game_running
 
 
 def run_gui(path):
@@ -231,3 +237,11 @@ def run_gui(path):
     slotbox.current(0)
     load()
     root.mainloop()
+
+
+if __name__ == "__main__":
+    args = [a for a in sys.argv[1:] if a != "--gui"]
+    path = args[0] if args else find_save()
+    if not path:
+        raise SystemExit("save not found; pass SAVE path")
+    run_gui(path)

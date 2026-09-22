@@ -97,6 +97,14 @@ class TestItems(unittest.TestCase):
         with self.assertRaises(ValueError):
             find_goods("zzz", db)
 
+    def test_find_goods_exact_first(self):
+        db = {"goods": {0x40001FF9: "Larval Tear", 0x401EA3E1: "Larval Tear",
+                        0x40000064: "Tarnished's Furled Finger"}}
+        with self.assertRaises(ValueError) as cm:
+            find_goods("larval tear", db)
+        self.assertIn("40001FF9", str(cm.exception))
+        self.assertEqual(find_goods("furled", db), 0x40000064)
+
 
 class TestResolve(unittest.TestCase):
     def test_direct_and_reinforced(self):

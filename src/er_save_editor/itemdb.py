@@ -63,9 +63,13 @@ def find_goods(query, db):
         return hits[0][0]
     if not hits:
         raise ValueError(f"no goods item matches {query!r}")
-    sample = ", ".join(n for _, n in hits[:10])
-    raise ValueError(f"{len(hits)} goods items match {query!r}: {sample}"
-                     + (" ..." if len(hits) > 10 else ""))
+    exact = [(i, n) for i, n in hits if n.lower() == q.lower()]
+    if len(exact) == 1:
+        return exact[0][0]
+    sample = ", ".join(f"{n} ({i:08X})" for i, n in (exact or hits)[:10])
+    raise ValueError(f"{len(exact or hits)} goods items match {query!r}: {sample}"
+                     + (" ..." if len(exact or hits) > 10 else "")
+                     + " — retry with the hex id")
 
 
 def update_db(dest=DB_DIR, src=None):
