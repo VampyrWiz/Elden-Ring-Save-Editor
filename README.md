@@ -11,7 +11,7 @@ Stdlib only: no dependencies, no install. Requires Python 3.8+
 
 Character / Statistics / Items tabs; open any save, save with backup + MD5:
 
-    python3 er_save_editor.py --gui
+    python3 er_save_editor.py --gui   # or: python3 src/er_save_editor --gui
 
 - **Character** — attributes, level (auto = sum − 79), runes, name, DLC blessings.
 - **Statistics** — every known stat, read-only (level check, playtime, checksums, item counts).
