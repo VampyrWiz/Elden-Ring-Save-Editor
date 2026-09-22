@@ -1,0 +1,1 @@
+This is my attempt at creating a save editor for Elden Ring. The goal is to provide a user-friendly interface for modifying save files, allowing players to customize their game experience.
