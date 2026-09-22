@@ -222,27 +222,40 @@ class Save:
         self.data[chk:chk + 16] = md5(self.data[d:d + SLOT_DATA])
 
     def add_item(self, n, iid, qty):
-        """Add goods to held inventory (merge if held, else append into an
-        empty slot). Returns (action, row, qty). Weapons/armor/AoW refused:
-        they need variable-length GaItem rows (unsafe without a rebuild)."""
+        """Add goods to held inventory: fill existing same-name stacks to
+        999 first, then append new rows. Returns (action, row, total held).
+        Weapons/armor/AoW refused: variable-length GaItem rows are unsafe."""
         from .items import goods_handle, pack_add, pack_qty, read_items
+        if not 1 <= qty <= 9999:
+            raise ValueError("qty must be 1..9999")
         _, dat = slot_offsets(n)
-        slot = self.slot_data(n)
-        base = self.held_base(n)
         handle = goods_handle(iid)
-        rows = read_items(slot, base, self.gaitems(n))
-        for row, h, _i, q, _ix in rows:
-            if h == handle:
-                newq = min(999, q + qty)
-                pack_qty(self.data, dat, base, row, newq)
-                chk, d = slot_offsets(n)
-                self.data[chk:chk + 16] = md5(self.data[d:d + SLOT_DATA])
-                return "merged", row, newq
-        index = max((_ix for _, _, _, _, _ix in rows), default=432) + 1
-        row = pack_add(self.data, dat, base, handle, qty, index)
+        base = self.held_base(n)
+        first, touched_new = None, False
+
+        def rows():
+            slot = self.slot_data(n)
+            return read_items(slot, base, self.gaitems(n))
+
+        for row, h, _i, q, _ix in rows():
+            if h == handle and qty > 0 and q < 999:
+                take = min(999 - q, qty)
+                pack_qty(self.data, dat, base, row, q + take)
+                qty -= take
+                if first is None:
+                    first = row
+        while qty > 0:
+            index = max((_ix for _, _, _, _, _ix in rows()), default=432) + 1
+            chunk = min(999, qty)
+            row = pack_add(self.data, dat, base, handle, chunk, index)
+            qty -= chunk
+            if first is None:
+                first = row
+            touched_new = True
         chk, d = slot_offsets(n)
         self.data[chk:chk + 16] = md5(self.data[d:d + SLOT_DATA])
-        return "added", row, qty
+        total = sum(q for _, h, _, q, _ in rows() if h == handle)
+        return ("added" if touched_new else "merged"), first, total
 
     def write(self):
         ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")

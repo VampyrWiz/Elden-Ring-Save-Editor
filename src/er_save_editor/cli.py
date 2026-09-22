@@ -88,7 +88,7 @@ def main(argv=None):
     p.add_argument("slot", type=int)
     p.add_argument("row", type=int)
     p.add_argument("qty", type=int)
-    p = sub.add_parser("additem", help="add goods (merge or append; weapons/armor refused)")
+    p = sub.add_parser("additem", help="add goods 1..9999 (fills stacks, splits over 999)")
     p.add_argument("slot", type=int)
     p.add_argument("query", help="hex id (e.g. 400006c2) or unique name part")
     p.add_argument("qty", type=int)

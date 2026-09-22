@@ -105,6 +105,14 @@ class TestItems(unittest.TestCase):
         self.assertIn("40001FF9", str(cm.exception))
         self.assertEqual(find_goods("furled", db), 0x40000064)
 
+    def test_add_item_guards(self):
+        from er_save_editor.save import Save
+        sv = Save.__new__(Save)
+        with self.assertRaises(ValueError):
+            sv.add_item(0, 0x40000005, 0)
+        with self.assertRaises(ValueError):
+            sv.add_item(0, 0x00000100, 5)
+
 
 class TestResolve(unittest.TestCase):
     def test_direct_and_reinforced(self):
