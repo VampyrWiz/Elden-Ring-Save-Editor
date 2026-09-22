@@ -1,0 +1,12 @@
+[project]
+name = "er-save-editor"
+version = "1.17.1"
+description = "Elden Ring ER0000.sl2 save editor for regulation 1.17.1 (stdlib only)"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.scripts]
+er-save-editor = "er_save_editor.cli:main"
+
+[build-system]
+requires = []
