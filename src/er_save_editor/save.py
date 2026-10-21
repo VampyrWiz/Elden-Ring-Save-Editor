@@ -32,8 +32,6 @@ def find_save():
     roots = [
         os.path.expanduser("~/.local/share/Steam/steamapps/compatdata/*/pfx"),
         os.path.expanduser("~/.wine"),
-        os.path.expanduser("~/Games/Wine"),
-        "/home/VampyrKing/Games/Wine",
     ]
     cands = []
     for r in roots:
