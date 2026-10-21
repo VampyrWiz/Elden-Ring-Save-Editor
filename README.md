@@ -1,33 +1,16 @@
 # Elden Ring Save Editor (regulation 1.17.x)
 
 A user-friendly save editor for Elden Ring on PC. Edit character stats,
-runes, inventory quantities, and add consumables — with automatic backups
+runes, inventory quantities, and add consumables with automatic backups
 and checksum repair on every write.
 
-Stdlib only: no dependencies, no install. Requires Python 3.8+
-(`tkinter` for the GUI, shipped with most Pythons).
+Stdlib only: no dependencies, no install. Requires Python 3.8+.
 
 ## GUI
 
 Character / Statistics / Items tabs; open any save, save with backup + MD5:
 
     python3 er_save_editor.py --gui   # or: python3 src/er_save_editor --gui
-
-- **Character** — attributes, level (auto = sum − 79), runes, name, DLC blessings.
-- **Statistics** — every known stat, read-only (level check, playtime, checksums, item counts).
-- **Items** — held inventory with real names, search, quantity edit, add-item, item-DB updater.
-
-## CLI
-
-    python3 er_save_editor.py list
-    python3 er_save_editor.py show 0
-    python3 er_save_editor.py items 0 [--search kukri]
-    python3 er_save_editor.py setqty 0 53 50        # held goods qty, 1..999
-    python3 er_save_editor.py additem 0 kukri 99     # add goods (merge or append)
-    python3 er_save_editor.py additem 0 400006c2 99  # same by hex id
-    python3 er_save_editor.py set 0 vigor=50 runes=100000
-    python3 er_save_editor.py set 0 level=150 name=Abisa --no-autolevel
-    python3 er_save_editor.py updatedb               # refresh items_db/
 
 The save is auto-detected under Wine/Steam (`--save PATH` overrides).
 
@@ -37,9 +20,6 @@ The save is auto-detected under Wine/Steam (`--save PATH` overrides).
 - Every write keeps a timestamped backup (`ER0000.sl2.bak-<date>`) next to the save.
 - Edits are in-place fixed-size only: stats, quantities, appended goods rows
   (empty held slots + count bump). MD5 checksums are recalculated.
-- Weapons/armor add/remove are refused — they need variable-length GaItem
-  surgery, the edit known to corrupt saves. The storage box is unmapped
-  (empty in every save on hand, so no signature to validate against).
 
 ## Layout
 
